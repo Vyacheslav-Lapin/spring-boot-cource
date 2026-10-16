@@ -1,0 +1,96 @@
+package ru.ibs.cources.java.spring.boot.cource;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import ru.ibs.cources.java.spring.boot.cource.exceptions.ActiveAccountNotSet;
+import ru.ibs.cources.java.spring.boot.cource.model.AbstractAccount;
+import ru.ibs.cources.java.spring.boot.cource.model.CheckingAccount;
+import ru.ibs.cources.java.spring.boot.cource.model.Client;
+import ru.ibs.cources.java.spring.boot.cource.model.SavingAccount;
+import ru.ibs.cources.java.spring.boot.cource.service.BankReportService;
+import ru.ibs.cources.java.spring.boot.cource.service.Banking;
+import ru.ibs.cources.java.spring.boot.cource.service.ClientService;
+
+@SpringBootApplication
+@RequiredArgsConstructor
+public class BankApplication {
+
+  public static final String[] CLIENT_NAMES = {
+      "Jonny Bravo",
+      "Adam Budzinski",
+      "Anna Smith",
+  };
+
+  @Bean CommandLineRunner workWithExistingClients(ClientService clientService,
+                                                  Banking banking,
+                                                  BankReportService reportService) {
+    return _ -> {
+      System.out.println("\n=======================================");
+      System.out.println("\n===== Work with existing clients ======");
+
+      Client jonny = banking.getClient(CLIENT_NAMES[0]);
+
+      try {
+        clientService.deposit(jonny, 5_000);
+      } catch (ActiveAccountNotSet e) {
+        System.out.println(e.getMessage());
+        clientService.setDefaultActiveAccountIfNotSet(jonny);
+        clientService.deposit(jonny, 5_000);
+      }
+
+      System.out.println(clientService.toString(jonny));
+
+      Client adam = banking.getClient(CLIENT_NAMES[1]);
+      clientService.setDefaultActiveAccountIfNotSet(adam);
+
+      clientService.withdraw(adam, 1_500);
+
+      double balance = clientService.getBalance(adam);
+      System.out.printf("\n%s, current balance: %s%n", adam.getName(), balance);
+
+      banking.transferMoney(jonny, adam, 1_000);
+
+      System.out.println("\n=======================================");
+      banking.getClients().forEach(System.out::println);
+//    };
+//  }
+//
+//  @Bean ApplicationRunner bankingServiceDemo() {
+//    return _ ->  {
+      System.out.println("\n=== Initialization using Banking implementation ===\n");
+
+      Client anna = new Client(CLIENT_NAMES[2], Client.Gender.FEMALE);
+      anna = banking.addClient(anna);
+
+      AbstractAccount saving = banking.createAccount(anna, SavingAccount.class);
+      saving.deposit(1_000);
+
+      banking.updateAccount(anna, saving);
+
+      AbstractAccount checking = banking.createAccount(anna, CheckingAccount.class);
+      checking.deposit(3_000);
+
+      banking.updateAccount(anna, checking);
+
+      banking.getAllAccounts(anna)
+             .forEach(System.out::println);
+//    };
+//  }
+//
+//  @Bean CommandLineRunner bankReportsDemo(BankReportService reportService) {
+//    return _ -> {
+      System.out.println("\n=== Using BankReportService ===\n");
+      System.out.println("Number of clients: " + reportService.getNumberOfBankClients());
+      System.out.println("Number of accounts: " + reportService.getAccountsNumber());
+      System.out.println("Bank Credit Sum: " + reportService.getBankCreditSum());
+    };
+  }
+
+  static void main(String[] args) {
+    SpringApplication.run(BankApplication.class, args)
+                     .close();
+  }
+}

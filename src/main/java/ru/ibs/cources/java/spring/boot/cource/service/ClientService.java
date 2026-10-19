@@ -32,12 +32,12 @@ public class ClientService {
 
   @PostConstruct
   private void init() {
-    val jonnyBravo = new Client(CLIENT_NAMES[0], Client.Gender.MALE);
+    val jonnyBravo = new Client(CLIENT_NAMES.getFirst(), Client.Gender.MALE);
     addAccount(jonnyBravo, new SavingAccount(1_000));
     addAccount(jonnyBravo, new CheckingAccount(1_000));
 
     val adamBudxinski = addAccount(
-        new Client(CLIENT_NAMES[1], Client.Gender.MALE),
+        new Client(CLIENT_NAMES.get(1), Client.Gender.MALE),
         new CheckingAccount(1_500));
 
     repository.addAll(jonnyBravo, adamBudxinski);

@@ -1,1 +1,3 @@
-spring.application.name: spring-boot-cource
+spring:
+  application.name: spring-boot-cource
+  profiles.active: dev

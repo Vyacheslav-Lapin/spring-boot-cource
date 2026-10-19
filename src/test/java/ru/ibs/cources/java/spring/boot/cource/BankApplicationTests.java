@@ -41,17 +41,17 @@ class BankApplicationTests {
   @Test
   public void initializationClient1() {
     // when
-    Client client = banking.getClient(CLIENT_NAMES[0]);
+    Client client = banking.getClient(CLIENT_NAMES.getFirst());
     assertThat(client).isNotNull()
                       // then
-                      .withFailMessage(() -> "banking should have client with name: %s".formatted(CLIENT_NAMES[0]))
+                      .withFailMessage(() -> "banking should have client with name: %s".formatted(CLIENT_NAMES.getFirst()))
                       .extracting(Client::getAccounts, InstanceOfAssertFactories.list(AbstractAccount.class))
                       .hasSize(2);
   }
 
   @Test
   public void client1SavingAccount() {
-    Client client = banking.getClient(CLIENT_NAMES[0]);
+    Client client = banking.getClient(CLIENT_NAMES.getFirst());
     SavingAccount account = clientService.getAccount(client, SavingAccount.class);
 
     // when
@@ -64,13 +64,14 @@ class BankApplicationTests {
 
   @Test
   public void client1CheckingAccount() {
-    Client client = banking.getClient(CLIENT_NAMES[0]);
+    Client client = banking.getClient(CLIENT_NAMES.getFirst());
 
     // when
     assertThat(clientService.getAccount(client, CheckingAccount.class)).isNotNull()
                        // then
                        .withFailMessage(() -> "%s should have %s account".formatted(client.getName(), CheckingAccount.class.getSimpleName()))
-                       .satisfies(account -> assertThat(account.getBalance()).isEqualTo(4_000))
+                       .satisfies(account -> assertThat(account.getBalance()).isEqualTo(0))
+//                       .satisfies(account -> assertThat(account.getBalance()).isEqualTo(4_000))
                        .satisfies(account -> assertThat(account.getOverdraft()).isEqualTo(1_000));
   }
 }

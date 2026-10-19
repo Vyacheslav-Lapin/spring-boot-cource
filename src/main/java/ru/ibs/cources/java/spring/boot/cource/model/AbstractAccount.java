@@ -1,6 +1,5 @@
 package ru.ibs.cources.java.spring.boot.cource.model;
 
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,12 +7,15 @@ import lombok.Setter;
 
 import java.util.UUID;
 
+import static lombok.AccessLevel.*;
+
 @Getter
+@Setter(PACKAGE)
 @NoArgsConstructor
 @EqualsAndHashCode
-@Setter(AccessLevel.PACKAGE)
 public sealed abstract class AbstractAccount permits CheckingAccount, SavingAccount {
 
+    @Setter(PUBLIC)
     private UUID id;
 
     private double balance;

@@ -1,9 +1,16 @@
 package ru.ibs.cources.java.spring.boot.cource.model;
 
+import jakarta.persistence.Entity;
+import lombok.experimental.ExtensionMethod;
 import ru.ibs.cources.java.spring.boot.cource.exceptions.NotEnoughFundsException;
-import lombok.EqualsAndHashCode;
+import ru.ibs.cources.java.spring.boot.cource.utils.HibernateUtils;
 
-@EqualsAndHashCode(callSuper = true)
+import java.util.Objects;
+
+import static ru.ibs.cources.java.spring.boot.cource.utils.HibernateUtils.*;
+
+@Entity
+@ExtensionMethod(value = HibernateUtils.class, suppressBaseMethods =false)
 public final class SavingAccount extends AbstractAccount {
 
     public SavingAccount(double initialBalance) {
@@ -20,4 +27,18 @@ public final class SavingAccount extends AbstractAccount {
 
         setBalance(getBalance() - amount);
     }
+
+    //region equals and hashCode
+    @Override
+    public boolean equals(Object object) {
+        return this == object || object instanceof SavingAccount savingAccount
+                                 && persistentClass(this) == savingAccount.persistentClass()
+                                 && Objects.equals(getId(), savingAccount.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return persistentClass(this).hashCode();
+    }
+    //endregion
 }

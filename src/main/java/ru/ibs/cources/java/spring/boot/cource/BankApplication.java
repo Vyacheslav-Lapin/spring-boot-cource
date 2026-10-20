@@ -89,7 +89,6 @@ public class BankApplication {
 //  }
 
   static void main(String[] args) {
-    SpringApplication.run(BankApplication.class, args)
-                     .close();
+    SpringApplication.run(BankApplication.class, args);
   }
 }

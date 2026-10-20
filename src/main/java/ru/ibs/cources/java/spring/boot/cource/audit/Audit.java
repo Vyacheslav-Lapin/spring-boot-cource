@@ -1,11 +1,18 @@
 package ru.ibs.cources.java.spring.boot.cource.audit;
 
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Configuration;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.BalanceEvent;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.DepositEvent;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.WithdrawEvent;
 import ru.ibs.cources.java.spring.boot.cource.model.AbstractAccount;
 import ru.ibs.cources.java.spring.boot.cource.model.Client;
 
@@ -19,7 +26,6 @@ import static java.lang.annotation.RetentionPolicy.*;
 @Retention(RUNTIME)
 @Target({ANNOTATION_TYPE})
 public @interface Audit {
-
 }
 
 @Aspect
@@ -27,10 +33,21 @@ public @interface Audit {
 @RequiredArgsConstructor
 class AuditAspect {
 
-  private final AuditService audit;
+  private final ApplicationEventPublisher eventPublisher;
 
   @Pointcut("execution(* ru.ibs.cources.java.spring.boot.cource.service.operations.*.deposit(..))")
   public void anyDeposit() {}
+
+  @Pointcut("@annotation(Audit) || within(@Audit *)"
+            + " || execution(@(@Audit *) * *(..)) || within (@(@Audit *) *)"
+            + " || execution(@(@(@Audit *) *) * *(..)) || within (@(@(@Audit *) *) *)"
+            + " || execution(@(@(@(@Audit *) *) *) * *(..)) || within (@(@(@(@Audit *) *) *) *)"
+            + " || execution(@(@(@(@(@Audit *) *) *) *) * *(..)) || within (@(@(@(@(@Audit *) *) *) *) *)"
+            + " || execution(@(@(@(@(@(@Audit *) *) *) *) *) * *(..)) || within (@(@(@(@(@(@Audit *) *) *) *) *) *)"
+            + " || execution(@(@(@(@(@(@(@Audit *) *) *) *) *) *) * *(..)) || within (@(@(@(@(@(@(@Audit *) *) *) *) *) *) *)"
+            + " || execution(@(@(@(@(@(@(@(@Audit *) *) *) *) *) *) *) * *(..)) || within (@(@(@(@(@(@(@(@Audit *) *) *) *) *) *) *) *)")
+  void auditPointcut() {
+  }
 
   @Pointcut("execution(* ru.ibs.cources.java.spring.boot.cource.service.operations.*.withdraw(..))")
   public void anyWithdraw() {}
@@ -54,7 +71,39 @@ class AuditAspect {
   @Before("anyDeposit()")
   public void logDeposit(JoinPoint joinPoint) {
     Object[] methodArgs = joinPoint.getArgs();
-    audit.auditDeposit(getAccountId(methodArgs), (double) methodArgs[1]);
+    eventPublisher.publishEvent(new DepositEvent(getAccountId(methodArgs), (double) methodArgs[1]));
   }
 
+  @Before("anyBalance()")
+  public void logBalance(JoinPoint joinPoint) {
+    val methodArgs = joinPoint.getArgs();
+    eventPublisher.publishEvent(new BalanceEvent(getAccountId(methodArgs)));
+  }
+
+  @Around("anyWithdraw()")
+  public Object logWithdrawal(ProceedingJoinPoint thisJoinPoint) throws Throwable {
+    Object[] methodArgs = thisJoinPoint.getArgs();
+
+    UUID accountId = getAccountId(methodArgs);
+    eventPublisher.publishEvent(new WithdrawEvent(accountId, (double) methodArgs[1]));
+
+    Object result;
+    try {
+      result = thisJoinPoint.proceed();
+      eventPublisher.publishEvent(
+          new WithdrawEvent(accountId,
+                            (double) methodArgs[1],
+                            WithdrawEvent.State.SUCCESSFUL));
+      ;
+    } catch (Exception e) {
+      eventPublisher.publishEvent(
+          new WithdrawEvent(accountId,
+                            (double) methodArgs[1],
+                            WithdrawEvent.State.FAILED));
+
+      throw e;
+    }
+
+    return result;
+  }
 }

@@ -1,33 +1,51 @@
 package ru.ibs.cources.java.spring.boot.cource.audit;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.AccountEvent;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.BalanceEvent;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.DepositEvent;
+import ru.ibs.cources.java.spring.boot.cource.audit.events.WithdrawEvent;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 public sealed interface AuditService {
 
-  void auditDeposit(UUID accountId, double amount);
-  void auditWithdraw(long accountId, double amount, WithdrawState state);
-  void auditBalance(long accountId);
+  @EventListener void auditOperation(DepositEvent event);
+  @EventListener void auditOperation(WithdrawEvent event);
+  @EventListener void auditOperation(BalanceEvent event);
+
+  List<AccountEvent> getEvents();
 }
 
+@Slf4j
 @Service
 final class AuditServiceImpl implements AuditService {
 
+  private final List<AccountEvent> events = new ArrayList<>(100);
 
   @Override
-  public void auditDeposit(UUID accountId, double amount) {
-    System.out.println("ACCOUNT ID: " + accountId + " DEPOSIT: " + amount);
+  public void auditOperation(DepositEvent event) {
+    events.add(event);
+    log.info("ACCOUNT ID: {} {}: {}", event.getAccountId(), event.getSource(), event.getAmount());
   }
 
   @Override
-  public void auditWithdraw(long accountId, double amount, WithdrawState state) {
-    System.out.println("ACCOUNT ID: " + accountId + " " + state + " WITHDRAWAL: " + amount);
+  public void auditOperation(WithdrawEvent event) {
+    events.add(event);
+    log.info("ACCOUNT ID: {} {} {}: {}", event.getAccountId(), event.getState(), event.getSource(), event.getAmount());
   }
 
   @Override
-  public void auditBalance(long accountId) {
-    System.out.println("ACCOUNT ID: " + accountId + " BALANCE CHECK");
+  public void auditOperation(BalanceEvent event) {
+    events.add(event);
+    log.info("ACCOUNT ID: {} {}", event.getAccountId(), event.getSource());
   }
 
+  @Override
+  public List<AccountEvent> getEvents() {
+    return new ArrayList<>(events);
+  }
 }

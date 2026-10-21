@@ -1,5 +1,9 @@
 #hibernate.dialect: org.hibernate.dialect.H2Dialect
 
+audit.amount:
+  deposit: 99
+  withdrawal: 99
+
 spring:
   application.name: spring-boot-cource
   profiles.active: dev

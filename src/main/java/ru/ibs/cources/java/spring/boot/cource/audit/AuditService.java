@@ -13,8 +13,12 @@ import java.util.List;
 
 public sealed interface AuditService {
 
-  @EventListener void auditOperation(DepositEvent event);
-  @EventListener void auditOperation(WithdrawEvent event);
+  @EventListener(condition = "#event.amount >= @eventConditionFilter.depositLimit")
+  void auditOperation(DepositEvent event);
+
+  @EventListener(condition = "#event.amount >= @eventConditionFilter.withdrawalLimit")
+  void auditOperation(WithdrawEvent event);
+
   @EventListener void auditOperation(BalanceEvent event);
 
   List<AccountEvent> getEvents();

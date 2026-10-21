@@ -13,8 +13,6 @@ import ru.ibs.cources.java.spring.boot.cource.service.Banking;
 import ru.ibs.cources.java.spring.boot.cource.service.ClientService;
 import ru.ibs.cources.java.spring.boot.cource.service.operations.BankingOperationsService;
 
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(classes = BankApplication.class)
@@ -30,7 +28,7 @@ public class BankApplicationTests2 {
     public void init() {
         client = banking.getClient("Jonny Bravo");
         clientService.setDefaultActiveAccountIfNotSet(client);
-        client.getActiveAccount().setId(UUID.randomUUID());
+//        client.getActiveAccount().setId(UUID.randomUUID());
     }
 
     @Test

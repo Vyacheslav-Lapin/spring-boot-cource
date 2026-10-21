@@ -1,8 +1,8 @@
 package ru.ibs.cources.java.spring.boot.cource.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -19,13 +19,13 @@ import static lombok.AccessLevel.*;
 @Entity
 @Setter(PACKAGE)
 @NoArgsConstructor
-@ExtensionMethod(value = HibernateUtils.class, suppressBaseMethods =false)
 @Table(name = "ACCOUNT")
-public sealed abstract class AbstractAccount permits CheckingAccount, SavingAccount {
+@ExtensionMethod(value = HibernateUtils.class, suppressBaseMethods = false)
+public abstract class AbstractAccount {
 
     @Id
-    @Setter(PUBLIC)
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @Column(updatable = false, nullable = false)
     private UUID id;
 
     private double balance;

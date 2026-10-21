@@ -6,6 +6,8 @@ import ru.ibs.cources.java.spring.boot.cource.model.AbstractAccount;
 import ru.ibs.cources.java.spring.boot.cource.model.Client;
 import ru.ibs.cources.java.spring.boot.cource.service.ClientService;
 
+import static io.vavr.API.*;
+
 public interface BankingOperationsService {
 
     double getBalance(Client client);
@@ -19,6 +21,8 @@ public interface BankingOperationsService {
     void withdraw(Client client, double amount);
 
     void withdraw(AbstractAccount client, double amount);
+
+    void adminResetBalance(AbstractAccount account);
 }
 
 @Service
@@ -55,5 +59,10 @@ class BankingOperationsServiceImpl implements BankingOperationsService {
     @Override
     public void withdraw(AbstractAccount account, double amount) {
         account.withdraw(amount);
+    }
+
+    @Override
+    public void adminResetBalance(AbstractAccount account) {
+        TODO("Сделать в рамках лабы №6");
     }
 }

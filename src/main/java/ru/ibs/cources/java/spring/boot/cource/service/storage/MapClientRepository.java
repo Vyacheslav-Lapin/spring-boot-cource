@@ -34,11 +34,9 @@ public class MapClientRepository implements ClientRepository {
 
     @Override
     public Client getBy(String name) { //todo 16.10.2026: Переделать на Optional
-        for (Client client : getAll()) {
-            if (name.equals(client.getName())) {
-                return client;
-            }
-        }
+        for (Client client : getAll())
+          if (name.equals(client.getName()))
+            return client;
 
         return null;
     }
